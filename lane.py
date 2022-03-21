@@ -1,5 +1,5 @@
 import cv2
-from lib.utils import detect_lane, show_image, display_lines
+from lib.utils import detect_lane, show_image, display_lines, compute_steering_angle, display_heading_line
 
 def main():
         
@@ -13,6 +13,12 @@ def main():
     print('detected line_segment: \n', lane_lines)
     
     show_image("lane lines", lane_lines_image)
+    
+    steeringAngle = compute_steering_angle(frame, lane_lines)
+    finalImage = display_heading_line(lane_lines_image, steeringAngle)
+    
+    print("Steering angle: ", steeringAngle)
+    show_image("Route", finalImage)
 
 if __name__ == '__main__':
     main()
