@@ -121,7 +121,7 @@ def detect_lane(frame):
     return lane_lines
 
 
-def display_lines(frame, lines, line_color=(0, 255, 0), line_width=2):
+def display_lines(frame, lines, line_color=(0, 255, 0), line_width=5):
 
     line_image = np.zeros_like(frame)
     if lines is not None:
@@ -214,6 +214,22 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
         stabilized_steering_angle = new_steering_angle
     print('Proposed angle: ', new_steering_angle, ', stabilized angle: ', stabilized_steering_angle)
     return stabilized_steering_angle
+
+
+def compute_angle(frame):
+    lane_lines = detect_lane(frame)
+    angle = compute_steering_angle(frame, lane_lines)
+    return angle
+
+
+def detect_direction(frame):
+    angle = compute_angle(frame)
+    direction = "F"
+    if angle < 90:
+        direction = "L"
+    elif angle > 90:
+        direction = "R"
+    return direction
 
 
 def show_image(window_name:str, image):
