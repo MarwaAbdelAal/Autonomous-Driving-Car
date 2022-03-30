@@ -1,17 +1,18 @@
 import cv2
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 ## Lane detection
  
 def detect_edges(frame):
     # filter for blue lane lines
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    show_image("hsv", hsv)
+    # show_image("hsv", hsv)
     lower_blue = np.array([60, 40, 40])
     upper_blue = np.array([150, 255, 255])
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
-    show_image("blue mask", mask)
+    # show_image("blue mask", mask)
 
     # detect edges
     edges = cv2.Canny(mask, 200, 400)
@@ -35,7 +36,7 @@ def region_of_interest(edges):
 
     cv2.fillPoly(mask, polygon, 255)
     cropped_edges = cv2.bitwise_and(edges, mask)
-    show_image("cropped_region_of_interest", cropped_edges)
+    # show_image("cropped_region_of_interest", cropped_edges)
     return cropped_edges
 
 
@@ -216,14 +217,9 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
     return stabilized_steering_angle
 
 
-def compute_angle(frame):
+def detect_direction(frame):
     lane_lines = detect_lane(frame)
     angle = compute_steering_angle(frame, lane_lines)
-    return angle
-
-
-def detect_direction(frame):
-    angle = compute_angle(frame)
     direction = "F"
     if angle < 90:
         direction = "L"
@@ -235,5 +231,8 @@ def detect_direction(frame):
 def show_image(window_name:str, image):
     
     cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+    image = cv2.resize(image, (960, 540))
     cv2.imshow(window_name, image)
     cv2.waitKey(0) # waits until a key is pressed
+    # cv2.destroyAllWindows()
+    
