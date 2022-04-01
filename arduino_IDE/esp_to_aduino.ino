@@ -9,7 +9,6 @@ HTTPClient http;
 #include <SoftwareSerial.h>
 String str;
 String dir;
-String direction[] = {"F", "B", "R", "L", "M"};
 
 void setup() {
   Serial.begin(115200);
