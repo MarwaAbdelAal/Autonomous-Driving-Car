@@ -29,18 +29,10 @@ void setup() {
 void connect_wifi()
 {
   delay(100);
-  //  char * username = "KhaledDodo";
-  //  char * password = "veto939599";
-  //  char * username = "youssef";
-  //  char * password = "12345678";
   char * username = "STUDBME2";
   char * password = "BME2Stud";
   //  char * username = "STUDBME1";
   //  char * password = "BME1Stud";
-  //  char * username = "Marwa";
-  //  char * password = "alipixels";
-  //  char * username = "Mikasa";
-  //  char * password = "mnnymnny";
   Serial.print("Connecting to Wifi: ");
   Serial.println(username);
   WiFi.begin(username, password);
