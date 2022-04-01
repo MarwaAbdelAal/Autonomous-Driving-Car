@@ -1,16 +1,3 @@
-//void setup() {
-//// Open serial communications and wait for port to open:
-//Serial.begin(115200);
-//while (!Serial) {
-//; // wait for serial port to connect. Needed for native USB port only
-//}
-//}
-//void loop() { // run over and over
-//if (Serial.available()) {
-//Serial.write(Serial.read());
-//}
-//}
-
 char dir;
 int ENA = 6; // MCU PWM Pin 10 to ENA on L298n Board
 int IN1 = 2;
