@@ -188,7 +188,7 @@ def compute_angle(frame):
 def detect_direction(frame):
     angle = compute_angle(frame)
     direction = "F"
-    if angle < 80 & angle > 100:
+    if angle >= 80 and angle <= 100:
         direction = "F"
     elif angle < 80:
         direction = "L"
