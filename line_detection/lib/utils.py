@@ -1,43 +1,31 @@
 import cv2
 import numpy as np
 import math
-import matplotlib.pyplot as plt
 
 ## Lane detection
- 
 def detect_edges(frame):
     # filter for blue lane lines
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     # show_image("hsv", hsv)
-    lower_blue = np.array([60, 40, 40])
+    lower_blue = np.array([60, 20, 20])
     upper_blue = np.array([150, 255, 255])
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
     # show_image("blue mask", mask)
 
     # detect edges
     edges = cv2.Canny(mask, 200, 400)
-
     return edges
 
 
 # Isolate Region of Interest
 def region_of_interest(edges):
-
     height, width = edges.shape
     mask = np.zeros_like(edges)
-
-    # only focus bottom half of the screen
-    polygon = np.array([[
-        (0, height * 1 / 2),
-        (width, height * 1 / 2),
-        (width, height),
-        (0, height),
-    ]], np.int32)
-
-    cv2.fillPoly(mask, polygon, 255)
-    cropped_edges = cv2.bitwise_and(edges, mask)
-    # show_image("cropped_region_of_interest", cropped_edges)
-    return cropped_edges
+    half_height = int(1/2 * height) # only focus bottom half of the screen
+    mask[half_height: height] = np.ones(width)
+    roi = np.multiply(edges, mask)
+    return roi
+    # show_image("cropped_region_of_interest", roi)
 
 
 # these values works with a 320x240 resolution camera running between solid blue lane lines. Of course, they need to be re-tuned for a life-sized car with a high-resolution camera running on a real road with white/yellow dashed lane lines.
@@ -47,8 +35,7 @@ def detect_line_segments(cropped_edges):
     angle = np.pi / 180  # angular precision in radian, i.e. 1 degree
     min_threshold = 10  # minimal of votes
     line_segments = cv2.HoughLinesP(cropped_edges, rho, angle, min_threshold, 
-                                    np.array([]), minLineLength=8, maxLineGap=4)
-
+                                    np.array([]), minLineLength=50, maxLineGap=8)
     return line_segments
 
 
@@ -66,7 +53,6 @@ def average_slope_intercept(frame, line_segments):
     height, width, _ = frame.shape
     left_fit = []
     right_fit = []
-
     boundary = 1/3
     left_region_boundary = width * (1 - boundary)  # left lane line segment should be on left 2/3 of the screen
     right_region_boundary = width * boundary # right lane line segment should be on left 2/3 of the screen
@@ -74,7 +60,7 @@ def average_slope_intercept(frame, line_segments):
     for line_segment in line_segments:
         for x1, y1, x2, y2 in line_segment:
             if x1 == x2:
-                print('skipping vertical line segment (slope=inf): %s' % line_segment)
+                # print('skipping vertical line segment (slope=inf): %s' % line_segment)
                 continue
             fit = np.polyfit((x1, x2), (y1, y2), 1)
             slope = fit[0]
@@ -94,17 +80,15 @@ def average_slope_intercept(frame, line_segments):
     if len(right_fit) > 0:
         lane_lines.append(make_points(frame, right_fit_average))
 
-    print('lane lines: %s' % lane_lines)  # [[[316, 720, 484, 432]], [[1009, 720, 718, 432]]]
-
+    # print('lane lines: %s' % lane_lines)  # [[[316, 720, 484, 432]], [[1009, 720, 718, 432]]]
     return lane_lines
 
 
 def make_points(frame, line):
-
     height, width, _ = frame.shape
     slope, intercept = line
     y1 = height  # bottom of the frame
-    y2 = int(y1 * 1 / 2)  # make points from middle of the frame down
+    y2 = int(y1 * 0.5)  # make points from middle of the frame down
 
     # bound the coordinates within the frame
     x1 = max(-width, min(2 * width, int((y1 - intercept) / slope)))
@@ -113,29 +97,25 @@ def make_points(frame, line):
 
 
 def detect_lane(frame):
-
     edges = detect_edges(frame)
     cropped_edges = region_of_interest(edges)
     line_segments = detect_line_segments(cropped_edges)
     lane_lines = average_slope_intercept(frame, line_segments)
-    
     return lane_lines
 
 
 def display_lines(frame, lines, line_color=(0, 255, 0), line_width=5):
-
     line_image = np.zeros_like(frame)
     if lines is not None:
         for line in lines:
             for x1, y1, x2, y2 in line:
                 cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
     line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
+    # show_image("lane lines", line_image)
     return line_image
 
 
 ## Motion Planning: Steering
-
-
 def compute_steering_angle(frame, lane_lines):
     """ Find the steering angle based on lane line coordinate
         We assume that camera is calibrated to point to dead center
@@ -148,7 +128,7 @@ def compute_steering_angle(frame, lane_lines):
     # Get middle line in case of detecting single lane
     height, width, _ = frame.shape
     if len(lane_lines) == 1:
-        print('Only detected one lane line, just follow it. ', lane_lines[0])
+        # print('Only detected one lane line, just follow it. ', lane_lines[0])
         x1, _, x2, _ = lane_lines[0][0]
         x_offset = x2 - x1
     else:   # get middle line in case of detecting two lanes
@@ -164,10 +144,8 @@ def compute_steering_angle(frame, lane_lines):
     angle_to_mid_radian = math.atan(x_offset / y_offset)  # angle (in radian) to center vertical line
     angle_to_mid_deg = int(angle_to_mid_radian * 180.0 / math.pi)  # angle (in degrees) to center vertical line
     steeringAngle = angle_to_mid_deg + 90  # this is the steering angle needed by picar front wheel
-
-    print('new steering angle: ', steeringAngle)
+    # print('new steering angle: ', steeringAngle)
     return steeringAngle
-
 
 
 def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_width=5):
@@ -190,49 +168,38 @@ def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_wid
 
     cv2.line(heading_image, (x1, y1), (x2, y2), line_color, line_width)
     heading_image = cv2.addWeighted(frame, 0.8, heading_image, 1, 1)
-
+    
     return heading_image
 
 
-def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lane_lines, max_angle_deviation_two_lines=5, max_angle_deviation_one_lane=1):
-    """
-    Using last steering angle to stabilize the steering angle
-    if new angle is too different from current angle, 
-    only turn by max_angle_deviation degrees
-    """
-    if num_of_lane_lines == 2 :
-        # if both lane lines detected, then we can deviate more
-        max_angle_deviation = max_angle_deviation_two_lines
-    else :
-        # if only one lane detected, don't deviate too much
-        max_angle_deviation = max_angle_deviation_one_lane
-    
-    angle_deviation = new_steering_angle - curr_steering_angle
-    if abs(angle_deviation) > max_angle_deviation:
-        stabilized_steering_angle = int(curr_steering_angle
-            + max_angle_deviation * angle_deviation / abs(angle_deviation))
-    else:
-        stabilized_steering_angle = new_steering_angle
-    print('Proposed angle: ', new_steering_angle, ', stabilized angle: ', stabilized_steering_angle)
-    return stabilized_steering_angle
+def show_heading_line(frame):
+    lane_lines = detect_lane(frame)
+    lane_lines_image = display_lines(frame, lane_lines)    
+    steeringAngle = compute_steering_angle(frame, lane_lines)    
+    finalImage = display_heading_line(lane_lines_image, steeringAngle)
+    return finalImage
 
+
+def compute_angle(frame):
+    lanes = detect_lane(frame)
+    angle = compute_steering_angle(frame, lanes)
+    return angle
 
 def detect_direction(frame):
-    lane_lines = detect_lane(frame)
-    angle = compute_steering_angle(frame, lane_lines)
+    angle = compute_angle(frame)
     direction = "F"
-    if angle < 90:
+    if angle < 80 & angle > 100:
+        direction = "F"
+    elif angle < 80:
         direction = "L"
-    elif angle > 90:
+    elif angle > 100:
         direction = "R"
     return direction
 
 
 def show_image(window_name:str, image):
-    
     cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
     image = cv2.resize(image, (960, 540))
     cv2.imshow(window_name, image)
     cv2.waitKey(0) # waits until a key is pressed
-    # cv2.destroyAllWindows()
-    
+    cv2.destroyAllWindows()
