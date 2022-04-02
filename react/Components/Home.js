@@ -25,7 +25,6 @@ export default function Home(props) {
         try{
         console.log(title)
         // data = JSON.stringify({mode:"title" , direction:"none"})
-        // let response = await fetch('http://172.28.132.122:8090/video_feed', 
         let response = await fetch('http://172.17.255.255/video_feed', 
         { method: 'POST', headers: { Accept: 'application/json','Content-Type': 'application/json'},body: JSON.stringify({mode:mode , direction:"none"})
          
