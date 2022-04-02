@@ -14,7 +14,8 @@ export default function AutoMode() {
   const send_mode= async(mode)=>{
     try{
       if(mode=="Automatic"){
-      let response = await fetch('http://172.28.132.127:8090/video_feed', 
+      // let response = await fetch('http://172.28.132.122:8090/video_feed', 
+      let response = await fetch('http://172.17.255.255:8090/video_feed', 
       { method: 'POST', headers: { Accept: 'application/json','Content-Type': 'application/json'},body: JSON.stringify({mode:mode , direction:"none"})
      
      });
