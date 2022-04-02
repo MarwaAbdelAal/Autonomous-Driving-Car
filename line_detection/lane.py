@@ -5,7 +5,8 @@ warnings.filterwarnings('ignore')
 
 def detect():
         
-    frame = cv2.imread('../images/image20.jpg')
+    # frame = cv2.imread('../images/image5.jpg')
+    frame = cv2.imread('../image.jpg')
     show_image("Original image", frame)
     
     angle = compute_angle(frame)
