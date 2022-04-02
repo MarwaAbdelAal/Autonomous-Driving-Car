@@ -1,5 +1,4 @@
-# Detecting lane lines using openCV
-# Control Car mode desired from application
+# Control Car mode desired from application whether automatic or manually 
 
 
 ### Installing Dependencies
@@ -26,33 +25,21 @@ This will install all of the required packages selected within the `requirements
 
 ## Implementing the project
 
+#### install node modules for react app and start the app
 
-First, clone the pybind11 repository by running:
+navigate to react directory:
+```bash
+cd react/
+npm install
+npm start
+```
+
+#### Start the server in another terminal by navigating to App directory then run:
 
 ```bash
-git clone https://github.com/pybind/pybind11.git
+cd App/
+python web_cam.py
 ```
 
-Compile c++ code by running:
-> You need to install cmake and make
-```bash
-mkdir build
-cd build/
-cmake ..
-make
-```
 
-Navigate back to the project directory by running: 
-```bash
-cd ../ 
-```
-
-### Runnig the program
-```bash 
-python run.py 
-```
-
-## Expected Ouput
-![Output Plot](Output.png)
-From the output plot, we can see that FT time complexity is in the order of N^2 while FFT is in the order of (N log(N)).
-The output error is almost zero.
+Now your application is ready to detect the direction of the driving-car.
