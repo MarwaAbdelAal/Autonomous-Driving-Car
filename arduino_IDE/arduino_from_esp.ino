@@ -352,6 +352,8 @@ void loop() // run over and over
     Serial.println("Access is denied");
     //    playFalseMelody();
     digitalWrite(led_green, LOW);
+    digitalWrite(led_red, LOW);
+    delay(200);
     digitalWrite(led_red, HIGH);
     delay(1000);
     Serial.println("Please put your card on the RFID reader..");
