@@ -37,8 +37,13 @@ def video_feed():
 # Serving ESP GET request 
 @app.route('/direction',methods=["GET"])
 def send_direction():
-          print(directions[-1])
-          return directions[-1]
+#           print(directions[-1])
+#           return directions[-1]
+          state= (mod[0],dir[0])
+          print("state")
+          print(state)
+          print("ESP server") 
+          return jsonify(state)
 
 
 if __name__ == "__main__":
